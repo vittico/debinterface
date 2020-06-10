@@ -56,14 +56,10 @@ class InterfacesReader:
         for line in fileObj:
             # Identify the clauses by analyzing the first word of each line.
             # Go to the next line if the current line is a comment.
-            if line.strip().startswith("#") is True:
-                pass
-            else:
+            if line.strip().startswith("#") is not True:
                 self._parse_iface(line)
                 # Ignore blank lines.
-                if line.isspace() is True:
-                    pass
-                else:
+                if line.isspace() is not True:
                     self._parse_details(line)
                 self._read_auto(line)
                 self._read_hotplug(line)
@@ -78,46 +74,45 @@ class InterfacesReader:
             self._adapters[self._context].setAddrFam(sline[2])
 
     def _parse_details(self, line):
-        if line[0].isspace() is True:
-            sline = line.split()
-            if sline[0] == 'address':
-                self._adapters[self._context].setAddress(sline[1])
-            elif sline[0] == 'netmask':
-                self._adapters[self._context].setNetmask(sline[1])
-            elif sline[0] == 'gateway':
-                self._adapters[self._context].setGateway(sline[1])
-            elif sline[0] == 'broadcast':
-                self._adapters[self._context].setBroadcast(sline[1])
-            elif sline[0] == 'network':
-                self._adapters[self._context].setNetwork(sline[1])
-            elif sline[0].startswith('bridge') is True:
-                opt = sline[0].split('_')
-                sline.pop(0)
-                ifs = " ".join(sline)
-                self._adapters[self._context].replaceBropt(opt[1], ifs)
-            elif sline[0] == 'up' or sline[0] == 'down' or sline[0] == 'pre-up' or sline[0] == 'post-down':
-                ud = sline.pop(0)
-                cmd = ' '.join(sline)
-                if ud == 'up':
-                    self._adapters[self._context].appendUp(cmd)
-                elif ud == 'down':
-                    self._adapters[self._context].appendDown(cmd)
-                elif ud == 'pre-up':
-                    self._adapters[self._context].appendPreUp(cmd)
-                elif ud == 'post-down':
-                    self._adapters[self._context].appendPostDown(cmd)
-            else:
-                # store as if so as not to loose it
-                self._adapters[self._context].setUnknown(sline[0], sline[1])
+        if line[0].isspace() is not True:
+            return
+        sline = line.split()
+        if sline[0] == 'address':
+            self._adapters[self._context].setAddress(sline[1])
+        elif sline[0] == 'netmask':
+            self._adapters[self._context].setNetmask(sline[1])
+        elif sline[0] == 'gateway':
+            self._adapters[self._context].setGateway(sline[1])
+        elif sline[0] == 'broadcast':
+            self._adapters[self._context].setBroadcast(sline[1])
+        elif sline[0] == 'network':
+            self._adapters[self._context].setNetwork(sline[1])
+        elif sline[0].startswith('bridge') is True:
+            opt = sline[0].split('_')
+            sline.pop(0)
+            ifs = " ".join(sline)
+            self._adapters[self._context].replaceBropt(opt[1], ifs)
+        elif sline[0] in ['up', 'down', 'pre-up', 'post-down']:
+            ud = sline.pop(0)
+            cmd = ' '.join(sline)
+            if ud == 'up':
+                self._adapters[self._context].appendUp(cmd)
+            elif ud == 'down':
+                self._adapters[self._context].appendDown(cmd)
+            elif ud == 'pre-up':
+                self._adapters[self._context].appendPreUp(cmd)
+            elif ud == 'post-down':
+                self._adapters[self._context].appendPostDown(cmd)
+        else:
+            # store as if so as not to loose it
+            self._adapters[self._context].setUnknown(sline[0], sline[1])
 
     def _read_auto(self, line):
         ''' Identify which adapters are flagged auto. '''
         if line.startswith('auto'):
             sline = line.split()
             for word in sline:
-                if word == 'auto':
-                    pass
-                else:
+                if word != 'auto':
                     self._auto_list.append(word)
 
     def _read_hotplug(self, line):
@@ -125,9 +120,7 @@ class InterfacesReader:
         if line.startswith('allow-hotplug'):
             sline = line.split()
             for word in sline:
-                if word == 'allow-hotplug':
-                    pass
-                else:
+                if word != 'allow-hotplug':
                     self._hotplug_list.append(word)
 
     def _reset(self):
