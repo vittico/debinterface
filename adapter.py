@@ -48,9 +48,8 @@ class NetworkAdapter:
             else:
                 if not isinstance(val, validations['type']):
                     raise ValueError("{} should be {}".format(opt, str(validations['type'])))
-        if 'in' in validations:
-            if not val in validations['in']:
-                raise ValueError("{} should be in {}".format(opt, ", ".join(validations['in'])))
+        if 'in' in validations and val not in validations['in']:
+            raise ValueError("{} should be in {}".format(opt, ", ".join(validations['in'])))
 
     def validateIP(self, ip):
         '''
@@ -183,7 +182,7 @@ class NetworkAdapter:
 
     def setUnknown(self, key, val):
         ''' it's impossible to know about all available options, so storing uncommon ones as if '''
-        if not 'unknown' in self._ifAttributes:
+        if 'unknown' not in self._ifAttributes:
             self._ifAttributes['unknown'] = {}
         self._ifAttributes['unknown'][key] = val
 
@@ -225,12 +224,13 @@ class NetworkAdapter:
 
     def reset(self):
         ''' Initialize attribute storage structre. '''
-        self._ifAttributes = {}
-        self._ifAttributes['bridge-opts'] = {}
-        self._ifAttributes['up'] = []
-        self._ifAttributes['down'] = []
-        self._ifAttributes['pre-up'] = []
-        self._ifAttributes['post-down'] = []
+        self._ifAttributes = {
+            'bridge-opts': {},
+            'up': [],
+            'down': [],
+            'pre-up': [],
+            'post-down': [],
+        }
 
     def set_options(self, options):
         ''' raise ValueError or socket.error on issue '''

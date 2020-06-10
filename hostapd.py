@@ -7,10 +7,7 @@ class Hostapd(object):
     def __init__(self, path, backup_path=None):
         self._config = {}
         self._path = path
-        if not backup_path:
-            self.backup_path = path + ".bak"
-        else:
-            self.backup_path = backup_path
+        self.backup_path = path + ".bak" if not backup_path else backup_path
 
     @property
     def config(self):
@@ -36,8 +33,6 @@ class Hostapd(object):
         basic = ['interface', 'driver']
         bridge = ['bridge']
         wireless = ['ssid', 'channel', 'hw_mode']
-        auth = ['wpa', 'wpa_passphrase', 'wpa_key_mgmt']
-
         for k in basic:
             if self._config[k] is None:
                 raise ValueError("Missing required {} option".format(k))
@@ -55,17 +50,17 @@ class Hostapd(object):
 
         if 'wpa' in self._config:
             self._config['wpa'] = int(self._config['wpa'])
-            if not self._config['wpa'] in [1, 2, 3]:
+            if self._config['wpa'] not in [1, 2, 3]:
                 raise ValueError("Wpa option is not valid")
+            auth = ['wpa', 'wpa_passphrase', 'wpa_key_mgmt']
+
             for k in auth:
                 if self._config[k] is None:
                     raise ValueError("Missing required {} option for wireless security".format(k))
-            if self._config['wpa'] in [1, 3]:
-                if not self._config['wpa_pairwise']:
-                    raise ValueError("Missing required option for wireless security : wpa_pairwise")
-            if self._config['wpa'] in [2, 3]:
-                if not self._config['rsn_pairwise']:
-                    raise ValueError("Missing required option for wireless security rsn_pairwise")
+            if self._config['wpa'] in [1, 3] and not self._config['wpa_pairwise']:
+                raise ValueError("Missing required option for wireless security : wpa_pairwise")
+            if self._config['wpa'] in [2, 3] and not self._config['rsn_pairwise']:
+                raise ValueError("Missing required option for wireless security rsn_pairwise")
 
     def set_defaults(self):
         ''' Defaults for my needs, you should probably override this one '''
@@ -108,9 +103,7 @@ class Hostapd(object):
 
         with open(path, "r") as hostapd:
             for line in hostapd:
-                if line.startswith('#') is True:
-                    pass
-                else:
+                if line.startswith('#') is not True:
                     param, value = line.split("=")
                     if param and value:
                         self.set(param, value)

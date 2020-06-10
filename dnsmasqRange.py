@@ -12,10 +12,7 @@ class DnsmasqRange(object):
     def __init__(self, path, backup_path=None):
         self._config = {}
         self._path = path
-        if not backup_path:
-            self.backup_path = path + ".bak"
-        else:
-            self.backup_path = backup_path
+        self.backup_path = path + ".bak" if not backup_path else backup_path
 
     @property
     def config(self):
@@ -23,7 +20,7 @@ class DnsmasqRange(object):
 
     def set(self, key, value):
         if key == "dhcp-range":
-            if not "dhcp-range" in self._config:
+            if "dhcp-range" not in self._config:
                 self._config["dhcp-range"] = []
             if isinstance(value, str):
                 value = self._extract_range_info(value)
@@ -36,7 +33,7 @@ class DnsmasqRange(object):
             for r in self._config["dhcp-range"]:
                 required = ["interface", "start", "end", "lease_time"]
                 for k in required:
-                    if not k in r:
+                    if k not in r:
                         raise ValueError("Missing option : {}".format(k))
                 socket.inet_aton(r["start"])
                 socket.inet_aton(r["end"])
@@ -47,7 +44,7 @@ class DnsmasqRange(object):
 
     def get_itf_range(self, if_name):
         ''' If no if, return None '''
-        if not "dhcp-range" in self._config:
+        if "dhcp-range" not in self._config:
             return None
         for v in self._config['dhcp-range']:
             if v["interface"] == if_name:
